@@ -39,7 +39,7 @@ public class ProcessServiceImpl implements IProcessService {
     }
 
     @Override
-    public void startProcess(ProcessDescriptor aDescriptor, IProcessListener aListener) throws ProcessException {
+    public Process startProcess(ProcessDescriptor aDescriptor, IProcessListener aListener) throws ProcessException {
         Process process;
         try {
             List<String>   commandArray   = createCommandArray(aDescriptor.getCommand(), aDescriptor.getArgs());
@@ -70,6 +70,7 @@ public class ProcessServiceImpl implements IProcessService {
         });
 
         waitingThread.start();
+        return process;
     }
 
     private void putEnvVariables(Map<String, String> aMap, List<ProcessEnvVariable> aVariables) {

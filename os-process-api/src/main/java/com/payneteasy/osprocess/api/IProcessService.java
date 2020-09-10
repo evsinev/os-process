@@ -4,6 +4,6 @@ public interface IProcessService {
 
     ProcessRunResult runProcess(ProcessDescriptor aDescriptor) throws ProcessException;
 
-    void startProcess(ProcessDescriptor aDescriptor, IProcessListener aListener) throws ProcessException;
+    Process startProcess(ProcessDescriptor aDescriptor, IProcessListener aListener) throws ProcessException;
 
 }
