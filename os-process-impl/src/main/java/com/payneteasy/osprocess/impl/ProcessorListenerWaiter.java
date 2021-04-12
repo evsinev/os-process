@@ -60,6 +60,10 @@ public class ProcessorListenerWaiter implements IProcessListener {
 
     @Override
     public synchronized void onReadError(IOException e) {
-        lines.add("error: " + e.getMessage());
+        if ("Stream closed".equals(e.getMessage())) {
+            // skips stream closed error
+            return;
+        }
+        lines.add("error: " + e);
     }
 }
