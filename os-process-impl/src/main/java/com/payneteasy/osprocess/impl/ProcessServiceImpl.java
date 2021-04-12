@@ -12,6 +12,7 @@ import java.util.concurrent.Exchanger;
 import java.util.concurrent.ExecutorService;
 
 import static com.payneteasy.osprocess.impl.Safe.safeList;
+import static java.lang.ProcessBuilder.Redirect.PIPE;
 import static java.util.Collections.singletonList;
 
 public class ProcessServiceImpl implements IProcessService {
@@ -42,12 +43,18 @@ public class ProcessServiceImpl implements IProcessService {
     public Process startProcess(ProcessDescriptor aDescriptor, IProcessListener aListener) throws ProcessException {
         Process process;
         try {
-            List<String>   commandArray   = createCommandArray(aDescriptor.getCommand(), aDescriptor.getArgs());
+            List<String> commandArray = createCommandArray(aDescriptor.getCommand(), aDescriptor.getArgs());
+
             LOG.debug("Executing {} with working dir {} and env {} ...", commandArray, aDescriptor.getWorkingDir(), aDescriptor.getEnvVariables());
-            ProcessBuilder processBuilder = new ProcessBuilder(commandArray);
-            putEnvVariables(processBuilder.environment(), aDescriptor.getEnvVariables());
-            processBuilder.directory(aDescriptor.getWorkingDir());
-            process = processBuilder.start();
+
+            process = putEnvVariables(new ProcessBuilder(commandArray), aDescriptor.getEnvVariables())
+                    .directory(aDescriptor.getWorkingDir())
+                    .redirectInput       ( PIPE )
+                    .redirectOutput      ( PIPE )
+                    .redirectError       ( PIPE )
+                    .redirectErrorStream ( true )
+                    .start();
+
         } catch (IOException e) {
             throw new ProcessException("Cannot run " + aDescriptor.getCommand(), e);
         }
@@ -71,6 +78,11 @@ public class ProcessServiceImpl implements IProcessService {
 
         waitingThread.start();
         return process;
+    }
+
+    private ProcessBuilder putEnvVariables(ProcessBuilder aProcessBuilder, List<ProcessEnvVariable> aVariables) {
+        putEnvVariables(aProcessBuilder.environment(), aVariables);
+        return aProcessBuilder;
     }
 
     private void putEnvVariables(Map<String, String> aMap, List<ProcessEnvVariable> aVariables) {
